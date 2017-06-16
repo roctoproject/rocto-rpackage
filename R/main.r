@@ -45,15 +45,15 @@ job.skeleton <- function(name = "rocto-simulation",
 
 # Check whether directory is a valid job
 .checkJob <- function(dir) {
-  wrns <- c()
+  wrns <- msgs <- c()
   if (!dir.exists(dir)){
-    wrns <- append(wrns, "Job directory does not exist")
+    wrns <- c(wrns, "Job directory does not exist")
   } else {
     lst <- list.files(dir)
     fileExp <- c("main.R", "params.R") 
-    fileChk <- fileexp %in% lst
+    fileChk <- fileExp %in% lst
     if (!all(fileChk)){
-      wrns <- append(wrns, sprintf("Missing file: ", fileExp[fileChk]))
+      wrns <- c(wrns, sprintf("Missing file: ", fileExp[!fileChk]))
     } else {
       # create environment to evaluate the functions in main and params
       paramEnv <- new.env()
@@ -62,15 +62,21 @@ job.skeleton <- function(name = "rocto-simulation",
       source(file.path(dir, "params.R"), paramEnv)
       
       # check that all params are used in main
-      parExp <- list(paramEnv)
-      parChk <- parExp %in% names(formals(mainEnv$main))
+      parExp <- ls(paramEnv)
+      parUse <- names(formals(mainEnv$main))
+      parChk <- parExp %in% parUse
       if (!all(parChk)){
-        wrns <- append(wrns, sprintf("Unused param: ", parExp[parChk]))
+        wrns <- c(wrns, sprintf("Unused parameter in main: %s", parExp[!parChk]))
+      }
+      
+      parChk <- parUse %in% parExp
+      if (!all(parChk)){
+        msgs <- c(msgs, sprintf("Parameter used in main but not iterated: %s", parExp[!parChk]))
       }
     }
-    # if (!dir.exists(file.path(dir, "data"))){
-    #   wrns <- append(wrns, "Data directory does not exist")
-    # }
+    if (!dir.exists(file.path(dir, "data"))){
+      wrns <- append(wrns, "Data directory does not exist")
+    }
   }
   
   
@@ -80,11 +86,18 @@ job.skeleton <- function(name = "rocto-simulation",
     for (w in wrns) {
       warning(w, call. = FALSE)
     }
+    for (m in msgs) {
+      message(m)
+    }
     res <- FALSE
     attr(res, "warnings") <- wrns
   } else {
+    # TODO ask user to continue
+    for (m in msgs) {
+      message(m)
+    }
     res <- TRUE
   }
   
-  return(res)
+  return(invisible(res))
 }
