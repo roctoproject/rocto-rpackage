@@ -61,7 +61,7 @@ job.skeleton <- function(name = "rocto-simulation",
       source(file.path(dir, "main.R"), mainEnv)
       source(file.path(dir, "params.R"), paramEnv)
       
-      # check that all params are used in main
+      # check that all params are used in main and all main params are iterated
       parExp <- ls(paramEnv)
       parUse <- names(formals(mainEnv$main))
       parChk <- parExp %in% parUse
@@ -71,33 +71,44 @@ job.skeleton <- function(name = "rocto-simulation",
       
       parChk <- parUse %in% parExp
       if (!all(parChk)){
-        msgs <- c(msgs, sprintf("Parameter used in main but not iterated: %s", parExp[!parChk]))
+        wrns <- c(wrns, sprintf("Parameter used in main but not iterated: %s", parExp[!parChk]))
       }
     }
+    
     if (!dir.exists(file.path(dir, "data"))){
-      wrns <- append(wrns, "Data directory does not exist")
+      msgs <- c(msgs, "Data directory does not exist")
     }
   }
   
   
-  
+  # Check for warnings and messages and return result
   if (length(wrns) > 0) {
-    # warn and return false
     for (w in wrns) {
       warning(w, call. = FALSE)
     }
     for (m in msgs) {
       message(m)
     }
+    message("")
     res <- FALSE
     attr(res, "warnings") <- wrns
+    attr(res, "messages") <- msgs
   } else {
-    # TODO ask user to continue
-    for (m in msgs) {
-      message(m)
+    if (length(msgs) > 0) {
+      for (m in msgs) {
+        message(m)
+      }
+      message("")
+      cont <- utils::menu(c("Yes", "No"), title="Proceed anyway?")
+      if (cont == 1) {
+        res <- TRUE
+        attr(res, "messages") <- msgs
+      } else {
+        res <- FALSE
+        attr(res, "messages") <- msgs
+      }
     }
     res <- TRUE
   }
-  
   return(invisible(res))
 }
