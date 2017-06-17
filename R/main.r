@@ -7,8 +7,10 @@
      / /  / /_/ / /__/ /_/ /_/ /
     /_/   \\____/\\___/\\__/\\____/
     \n\n")
-
+  
+  cat("    ")
   cat(packageDescription("rocto", fields = "Title"))
+  cat("\n ")
 }
 
 
@@ -61,15 +63,27 @@ job.skeleton <- function(name = "rocto-simulation",
       source(file.path(dir, "main.R"), mainEnv)
       source(file.path(dir, "params.R"), paramEnv)
       
+      # check that testParams exist in the params file and that they contain all
+      # iterated parameters
+      parItr <- ls(paramEnv)
+      if (!"testParams" %in% parExp) {
+        wrns <- c(wrns, "testParams not found!")
+      } else {
+        parItr <- parItr[parItr!="testParams"]
+        parTst <- names(paramEnv$testParams)
+        if (!all(sort(parItr) == sort(parTst))) {
+          wrns <- c(wrns, "testParams do not ") #TODO
+        }
+      }
+      
       # check that all params are used in main and all main params are iterated
-      parExp <- ls(paramEnv)
       parUse <- names(formals(mainEnv$main))
-      parChk <- parExp %in% parUse
+      parChk <- parItr %in% parUse
       if (!all(parChk)){
         wrns <- c(wrns, sprintf("Unused parameter in main: %s", parExp[!parChk]))
       }
       
-      parChk <- parUse %in% parExp
+      parChk <- parUse %in% parItr
       if (!all(parChk)){
         wrns <- c(wrns, sprintf("Parameter used in main but not iterated: %s", parExp[!parChk]))
       }
