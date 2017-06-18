@@ -5,7 +5,7 @@ Authors@R: c(
   person("Erik-Jan", "van Kesteren", email = "first.last@example.com", role = c("aut", "cre")),
   person("Oguzhan", "Ogreden", email = "first.last@example.com", role = c("aut")))
 Description: This package allows you to create jobs to send to the rocto distributed computing cluster, a free and easy-to-use alternative to expensive and complex high-performance cluster computers.
-URL: https://rocto.github.io
+URL: https://roctoproject.github.io
 BugReports: https://github.com/rocto/rocto-rpackage/issues
 Depends: R (>= 3.4.0)
 License: MIT
