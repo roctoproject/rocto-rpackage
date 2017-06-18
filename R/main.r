@@ -41,15 +41,15 @@ newJob <- function(name = "roctoJob",
     stop(sprintf("Failed to create template in dir %s", dir))
   }
   changewd <- utils::menu(c("Yes", "No"), title="Set working directory to created folder?")
-  if (changewd == 1) {
-    setwd(dir)
-  }
   edit <- utils::menu(c("Yes", "No"), title="Open main and param files?")
   if (edit == 1) {
     file.edit(file.path(dir, "main.R"))
     file.edit(file.path(dir, "params.R"))
   }
-  
+  if (changewd == 1) {
+    setwd(dir)
+  }
+  return(invisible(TRUE))
 }
 
 # Pack the job for uploading to the rocto server
