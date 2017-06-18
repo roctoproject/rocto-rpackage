@@ -32,7 +32,7 @@ newJob <- function(name = "roctoJob",
       stop(gettextf("cannot create directory '%s'", path), 
            domain = NA)
   }
-  template_path <- file.path(find.package("rocto"), "template")
+  template_path <- system.file("template", package = "rocto")
   files_to_copy <- list.files(template_path, full.names = TRUE)
   dir <- file.path(path, name)
   safe.dir.create(dir)
