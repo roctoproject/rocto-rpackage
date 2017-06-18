@@ -18,9 +18,11 @@
 #' @export
 newJob <- function(name = "roctoJob",
                    path = ".") {
-  if (dir.exists(normalizePath(file.path(path,name)))){
+  if (dir.exists(file.path(path,name))){
     over <-  utils::menu(c("Yes", "No"), title="Directory already exists. Overwrite?")
-    if (over == 2) {
+    if (over == 1) {
+      unlink(file.path(path, name), recursive = TRUE)
+    } else {
       cat("Cancelled")
       return(invisible(FALSE))
     }
