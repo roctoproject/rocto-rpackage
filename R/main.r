@@ -30,9 +30,9 @@ newJob <- function(name = "roctoJob",
       stop(gettextf("cannot create directory '%s'", path), 
            domain = NA)
   }
-  template_path <- normalizePath(file.path(find.package("rocto"), "template"))
+  template_path <- file.path(find.package("rocto"), "template")
   files_to_copy <- list.files(template_path, full.names = TRUE)
-  dir <- normalizePath(file.path(path, name))
+  dir <- file.path(path, name)
   safe.dir.create(dir)
   b <- try(file.copy(files_to_copy, dir, recursive = TRUE))
   if (inherits(b, "try-error")) {
@@ -44,25 +44,24 @@ newJob <- function(name = "roctoJob",
   }
   edit <- utils::menu(c("Yes", "No"), title="Open main and param files?")
   if (edit == 1) {
-    file.edit(normalizePath(file.path(dir, "main.R")))
-    file.edit(normalizePath(file.path(dir, "params.R")))
+    file.edit(file.path(dir, "main.R"))
+    file.edit(file.path(dir, "params.R"))
   }
   
 }
 
 # Pack the job for uploading to the rocto server
 #' @export
-packJob <- function(path = ".") {
+packJob <- function(path = ".", verbose = FALSE) {
   validJob <- jobPrepped <- jobPacked <- FALSE
   # first, check whether directory is a valid job
   validJob <- .checkJob(path)
   if (validJob) {
     # prepare job for packing and gather information
-    job <- .prepJob(path)
-    jobPrepped <- job[["prepped"]]
+    jobPrepped <- .prepJob(path, verbose)
     if (jobPrepped) {
       # package the job, copy it next to the original and ask to open folder
-      jobPacked <- .zipJob(job[["path"]], path)
+      jobPacked <- .zipJob(path)
     }
   }
   
@@ -79,15 +78,16 @@ packJob <- function(path = ".") {
 # Check whether directory is a valid job
 .checkJob <- function(dir) {
   oldwd <- getwd()
+  fulldir <- normalizePath(dir)
   wrns <- msgs <- c()
   if (!dir.exists(dir)){
     wrns <- c(wrns, "Job directory does not exist")
   } else {
     # first copy to tempdir and switch to it.
     tdir <- tempdir()
-    copySuccess <- file.copy(dir, tdir, recursive = TRUE)
+    copySuccess <- file.copy(fulldir, tdir, recursive = TRUE)
     if (copySuccess) {
-      setwd(normalizePath(file.path(tdir, basename(dir))))
+      setwd(file.path(tdir, basename(fulldir)))
     } else {
       stop("Temporary directory not available; could not check your package. Perhaps you don't have the correct permissions.")
     }
@@ -175,19 +175,20 @@ packJob <- function(path = ".") {
   }
   # Remove tempdir, switch back to original working directory and return output
   setwd(oldwd)
-  unlink(normalizePath(file.path(tdir, basename(dir))), recursive = TRUE)
+  unlink(file.path(tdir, basename(fulldir)), recursive = TRUE)
   return(invisible(res))
 }
 
 
 # Prepare job for packing and gather information
-.prepJob <- function(dir, showGrid = FALSE) {
+.prepJob <- function(dir, verbose = FALSE) {
+  fulldir <- normalizePath(dir)
   oldwd <- getwd()
   # first copy to tempdir and switch to it.
   tdir <- tempdir()
-  copySuccess <- file.copy(dir, tdir, recursive = TRUE)
+  copySuccess <- file.copy(fulldir, tdir, recursive = TRUE)
   if (copySuccess) {
-    setwd(normalizePath(file.path(tdir, basename(dir))))
+    setwd(file.path(tdir, basename(fulldir)))
   } else {
     stop("Temporary directory not available; could not prepare your package. Perhaps you don't have the correct permissions.")
   }
@@ -220,21 +221,23 @@ packJob <- function(path = ".") {
   }
   
   setwd(oldwd)
-  return(invisible(list(
-    "prepped" = TRUE,
-    "path" = normalizePath(file.path(tdir, basename(dir)))
-  )))
+  return(invisible(TRUE))
 }
 
 # Package the job, copy it next to the original folder and ask to open folder
-.zipJob <- function(jobPath, dir) {
-  zip::zip(normalizePath(file.path(dirname(normalizePath(dir)), 
-                         paste0(basename(normalizePath(dir)), ".rocto"))), 
-           jobPath, recurse = TRUE)
+.zipJob <- function(dir) {
+  fulldir <- normalizePath(dir)
+  oldwd <- getwd()
+  tdir <- tempdir()
+  setwd(tdir)
+  zip::zip(paste0(basename(fulldir), ".rocto"), 
+           basename(fulldir), recurse = TRUE)
+  file.copy(from = paste0(basename(fulldir), ".rocto"), to = dirname(fulldir))
   open <- utils::menu(c("Yes", "No"), title="Open containing folder?")
   if (open) {
-    .openFolder(dirname(normalizePath(dir)))
+    .openFolder(dirname(fulldir))
   }
+  setwd(oldwd)
   return(invisible(TRUE))
 }
 
