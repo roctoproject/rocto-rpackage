@@ -50,8 +50,8 @@ newJob <- function(name = "roctoJob",
   changewd <- utils::menu(c("Yes", "No"), title="Set working directory to created folder?")
   edit <- utils::menu(c("Yes", "No"), title="Open main and param files?")
   if (edit == 1) {
-    utils::file.edit(file.path(dir, "main.R"))
-    utils::file.edit(file.path(dir, "params.R"))
+    file.edit(file.path(dir, "main.R"))
+    file.edit(file.path(dir, "params.R"))
   }
   if (changewd == 1) {
     setwd(dir)
