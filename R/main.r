@@ -1,20 +1,27 @@
 # The functions for rocto
 
-.onLoad <- function(libname, pkgname) {
-  cat("\n                        __
+.onAttach <- function(libname, pkgname) {
+  packageStartupMessage("                        __
        _________  _____/ /_____
       / ___/ __ \\/ ___/ __/ __ \\
      / /  / /_/ / /__/ /_/ /_/ /
-    /_/   \\____/\\___/\\__/\\____/
-    \n\n")
-  
-  cat("    ")
-  cat(packageDescription("rocto", fields = "Title"))
-  cat("\n ")
+    /_/   \\____/\\___/\\__/\\____/\n")
+  packageStartupMessage(paste0("    ", utils::packageDescription("rocto", fields = "Title")),"\n")
 }
 
 
-# Create skeleton for a new rocto job
+#' Initialise a new rocto job
+#' 
+#' Creates a skeleton for a new \code{rocto} job in the correct format. Also allows you
+#' to automatically set the working directory and open the param and main files.
+#' 
+#' @param name <character> Name to be given to the new job directory
+#' @param path <character> Where to create the directory (default to current working directory)
+#' 
+#' @return Invisible boolean TRUE
+#' 
+#' @seealso \code{\link{packJob}}
+#'  
 #' @export
 newJob <- function(name = "roctoJob",
                    path = ".") {
@@ -43,8 +50,8 @@ newJob <- function(name = "roctoJob",
   changewd <- utils::menu(c("Yes", "No"), title="Set working directory to created folder?")
   edit <- utils::menu(c("Yes", "No"), title="Open main and param files?")
   if (edit == 1) {
-    file.edit(file.path(dir, "main.R"))
-    file.edit(file.path(dir, "params.R"))
+    utils::file.edit(file.path(dir, "main.R"))
+    utils::file.edit(file.path(dir, "params.R"))
   }
   if (changewd == 1) {
     setwd(dir)
@@ -52,7 +59,18 @@ newJob <- function(name = "roctoJob",
   return(invisible(TRUE))
 }
 
-# Pack the job for uploading to the rocto server
+#' Pack a rocto directory for distribution
+#' 
+#' This function performs checks and then packs a raw \code{rocto} job directory 
+#' into a single file for uploading to the \code{rocto} volunteer cluster.
+#' 
+#' @param path <character> The root of the raw rocto job directory.
+#' @param verbose <boolean> Print debug information for inspecting parameter grid and meta info
+#' 
+#' @return Invisible boolean TRUE
+#' 
+#' @seealso \code{\link{newJob}}, \code{\link{resultsToList}}
+#'  
 #' @export
 packJob <- function(path = ".", verbose = FALSE) {
   initwd <- getwd()
@@ -76,7 +94,25 @@ packJob <- function(path = ".", verbose = FALSE) {
   } else {
     stop("Something went wrong during packaging. Inspect the warnings for more info.")
   }
-  
+}
+
+#' Load results from your rocto job into R
+#' 
+#' This function loads all the job results from a results folder into R at once.
+#' 
+#' @param roctoResults <character> Path to a rocto results folder.
+#' 
+#' @return List with \code{nIter} elements, each containing the results object of one iteration.
+#' 
+#' @seealso \code{\link{newJob}}, \code{\link{packJob}}
+#'  
+#' @export
+resultsToList <- function(roctoResults) {
+  if (!dir.exists(roctoResults)){
+    stop("Results directory not found")
+  }
+  return(lapply(list.files(roctoResults, full.names = TRUE), 
+                function(f) {load(f); return(o)}))
 }
 
 
@@ -183,7 +219,6 @@ packJob <- function(path = ".", verbose = FALSE) {
   return(invisible(res))
 }
 
-
 # Prepare job for packing and gather information
 .prepJob <- function(dir, tdir, verbose = FALSE) {
   fulldir <- normalizePath(dir)
@@ -204,6 +239,7 @@ packJob <- function(path = ".", verbose = FALSE) {
     gridList[[p]] <- gridEnv[[p]]
   }
   grid <- expand.grid(gridList, stringsAsFactors = FALSE)
+  colnames(grid) <- names(gridList)
   save(grid, file = "grid.Rdata")
   
   # create meta information
@@ -232,11 +268,14 @@ packJob <- function(path = ".", verbose = FALSE) {
   fulldir <- normalizePath(dir)
   oldwd <- getwd()
   setwd(tdir)
-  zip::zip(paste0(basename(fulldir), ".rocto"), 
-           basename(fulldir), recurse = TRUE)
-  file.copy(from = paste0(basename(fulldir), ".rocto"), to = dirname(fulldir))
+  filename <- paste0(basename(fulldir), ".rocto")
+  if (file.exists(filename)) {
+    unlink(filename)
+  }
+  zip::zip(filename, basename(fulldir), recurse = TRUE)
+  file.copy(from = filename, to = dirname(fulldir))
   open <- utils::menu(c("Yes", "No"), title="Open containing folder?")
-  if (open) {
+  if (open == 1) {
     .openFolder(dirname(fulldir))
   }
   setwd(oldwd)
