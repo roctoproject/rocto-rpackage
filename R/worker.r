@@ -20,7 +20,7 @@ evaluateTask <- function(roctoJob, outputDir, iterId = "test"){
     stop("Supply proper roctoJob file")
   } 
   
-  outputPath <- normalizePath(outputDir)
+  outputPath <- suppressWarnings(normalizePath(outputDir)) # TODO gracefully catch "dir does not exist"
   if (!dir.exists(outputPath)) {
     dir.create(outputPath, recursive = TRUE)
   }
