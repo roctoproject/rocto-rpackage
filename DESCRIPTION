@@ -1,6 +1,6 @@
 Package: rocto
 Title: Perform computation on a worldwide distributed cluster
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: c(
   person("Erik-Jan", "van Kesteren", email = "first.last@example.com", role = c("aut", "cre")),
   person("Oguzhan", "Ogreden", email = "first.last@example.com", role = c("aut")))
