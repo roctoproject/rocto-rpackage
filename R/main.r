@@ -55,15 +55,18 @@ newJob <- function(name = "roctoJob",
 # Pack the job for uploading to the rocto server
 #' @export
 packJob <- function(path = ".", verbose = FALSE) {
+  initwd <- getwd()
+  on.exit(function(){ setwd(initwd) })
   validJob <- jobPrepped <- jobPacked <- FALSE
+  tdir <- tempdir()
   # first, check whether directory is a valid job
-  validJob <- .checkJob(path)
+  validJob <- .checkJob(path, tdir)
   if (validJob) {
     # prepare job for packing and gather information
-    jobPrepped <- .prepJob(path, verbose)
+    jobPrepped <- .prepJob(path, tdir, verbose)
     if (jobPrepped) {
       # package the job, copy it next to the original and ask to open folder
-      jobPacked <- .zipJob(path)
+      jobPacked <- .zipJob(path, tdir)
     }
   }
   
@@ -78,7 +81,7 @@ packJob <- function(path = ".", verbose = FALSE) {
 
 
 # Check whether directory is a valid job
-.checkJob <- function(dir) {
+.checkJob <- function(dir, tdir) {
   oldwd <- getwd()
   fulldir <- normalizePath(dir)
   wrns <- msgs <- c()
@@ -86,7 +89,6 @@ packJob <- function(path = ".", verbose = FALSE) {
     wrns <- c(wrns, "Job directory does not exist")
   } else {
     # first copy to tempdir and switch to it.
-    tdir <- tempdir()
     copySuccess <- file.copy(fulldir, tdir, recursive = TRUE)
     if (copySuccess) {
       setwd(file.path(tdir, basename(fulldir)))
@@ -183,11 +185,10 @@ packJob <- function(path = ".", verbose = FALSE) {
 
 
 # Prepare job for packing and gather information
-.prepJob <- function(dir, verbose = FALSE) {
+.prepJob <- function(dir, tdir, verbose = FALSE) {
   fulldir <- normalizePath(dir)
   oldwd <- getwd()
   # first copy to tempdir and switch to it.
-  tdir <- tempdir()
   copySuccess <- file.copy(fulldir, tdir, recursive = TRUE)
   if (copySuccess) {
     setwd(file.path(tdir, basename(fulldir)))
@@ -227,10 +228,9 @@ packJob <- function(path = ".", verbose = FALSE) {
 }
 
 # Package the job, copy it next to the original folder and ask to open folder
-.zipJob <- function(dir) {
+.zipJob <- function(dir, tdir) {
   fulldir <- normalizePath(dir)
   oldwd <- getwd()
-  tdir <- tempdir()
   setwd(tdir)
   zip::zip(paste0(basename(fulldir), ".rocto"), 
            basename(fulldir), recurse = TRUE)
