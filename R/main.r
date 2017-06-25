@@ -249,7 +249,10 @@ resultsToList <- function(roctoResults) {
     "testParams" = gridEnv[["testParams"]],
     "nIter" = nrow(grid), 
     "dataSize" = file.size("data"), 
-    "RInfo" = as.list(unlist(version)))
+    "RInfo" = as.list(unlist(version)),
+    "RPackages" = list(
+      
+    ))
   
   jsonMeta <- jsonlite::toJSON(meta, pretty = TRUE)
   write(jsonMeta, file = "meta.json")
@@ -290,5 +293,70 @@ resultsToList <- function(roctoResults) {
     system2("open", normalizePath(pathname))
   } else if (os == "Linux") {
     system(paste0("xdg-open ", normalizePath(pathname))) 
+  }
+}
+
+
+.findUsedPackages <- function(file, namesOnly = FALSE) {
+  # Determine packages used
+  if (!class(text)=="character")
+    stop("Input a string")
+  
+  text <- paste(readLines(file, warn = FALSE),collapse="\n")
+
+  # Init
+  
+  # Check if this file sources other files
+  regex <- "(?<=source\\([\\\"\\']).*(?=[\\\"\\']\\))"
+  matches <- gregexpr(regex, text, perl = TRUE)[[1]]
+  lengths <- attr(matches, "match.length")
+  
+  # If it does, recursively get the names of packages from those files
+  sourcedPackages <- list()
+  if (any(matches>=0)){
+    for (m in seq_along(matches)){
+      sourceFile <- substr(text,matches[m],matches[m]+lengths[m]-1)
+      sourcedPackages[[m]] <- .findUsedPackages(sourceFile, namesOnly = TRUE)
+    }
+  }
+    
+  # Find packages used in this file
+  regex <- "(?<=library\\().*(?=\\))|(?<=require\\().*(?=\\))|(?<=[ \\t\\n\\(\\{\\|\\&\\)\\}\\\"\\'])[A-Za-z0-9\\.]*(?=::)"
+  matches <- gregexpr(regex, text, perl = TRUE)[[1]]
+  lengths <- attr(matches, "match.length")
+  
+  # If there are any, get their names
+  usedPackages <- NULL
+  if (any(matches>=0)){
+    for (m in seq_along(matches)){
+      usedPackages[m] <- substr(text,matches[m],matches[m]+lengths[m]-1)
+    }
+  }
+  
+  usedPackages <- trimws(c(usedPackages, 
+                           unlist(sourcedPackages, use.names = FALSE)))
+  
+  if (namesOnly) return(usedPackages)
+  
+  if (length(usedPackages)>0) {
+    
+    # Get the version number of each package and return output
+    uniquePackages <- unique(usedPackages)
+    pkgElement <- list("name"=NULL, "version"=NULL)
+    out <- rep(list(pkgElement), length(uniquePackages))
+    
+    for (p in seq_along(uniquePackages)){
+      pkg <- uniquePackages[p]
+      ver <- as.character(utils::packageVersion(pkg))
+      out[[p]][["name"]] <- pkg
+      out[[p]][["version"]] <- ver
+    }
+    return(out)
+    
+  } else {
+    
+    # no packages used, return null
+    return(NULL)
+    
   }
 }

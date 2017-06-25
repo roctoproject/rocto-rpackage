@@ -55,7 +55,7 @@ evaluateTask <- function(roctoJob, outputDir, iterId = "test"){
   
   # perform function
   o <- try(do.call(main, pSorted))
-  save(o, file = file.path(outputPath, paste0(filebase[1],iterId,".Rdata")))
+  save(o, file = file.path(outputPath, paste0(filebase[1],"-",iterId,".Rdata")))
   setwd(oldwd)
   
   return(invisible(TRUE))
