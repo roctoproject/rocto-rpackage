@@ -1,4 +1,4 @@
-# rocto
+# rocto ![travis-ci](https://travis-ci.org/roctoproject/rocto-rpackage.svg?branch=master)
 Perform computation on a worldwide distributed cluster
 
 ### what?
