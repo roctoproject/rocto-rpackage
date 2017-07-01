@@ -10,6 +10,8 @@ roctoNew(name = "roctoJob", path = ".", interactive = TRUE)
 \item{name}{<character> Name to be given to the new job directory}
 
 \item{path}{<character> Where to create the directory (default to current working directory)}
+
+\item{interactive}{<boolean> Whether to ask for feedback from user.}
 }
 \value{
 Invisible boolean TRUE
