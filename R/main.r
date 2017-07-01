@@ -17,6 +17,7 @@
 #' 
 #' @param name <character> Name to be given to the new job directory
 #' @param path <character> Where to create the directory (default to current working directory)
+#' @param interactive <boolean> Whether to ask for feedback from user.
 #' 
 #' @return Invisible boolean TRUE
 #' 

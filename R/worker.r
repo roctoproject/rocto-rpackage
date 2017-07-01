@@ -11,10 +11,10 @@
 #' 
 #' @return Invisible boolean TRUE.
 #' 
-#' @seealso \code{\link{newJob}}, \code{\link{packJob}}, \code{\link{resultsToList}}
+#' @seealso \code{\link{roctoNew}}, \code{\link{roctoPack}}, \code{\link{roctoResults}}
 #'  
 #' @export
-evaluateTask <- function(roctoJob, outputDir, iterId = "test"){
+roctoRun <- function(roctoJob, outputDir, iterId = "test"){
   filebase <- strsplit(basename(roctoJob), "\\.")[[1]]
   if (tolower(filebase[2]) != "rocto") {
     stop("Supply proper roctoJob file")
