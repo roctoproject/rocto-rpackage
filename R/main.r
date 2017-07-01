@@ -20,13 +20,19 @@
 #' 
 #' @return Invisible boolean TRUE
 #' 
-#' @seealso \code{\link{packJob}}
+#' @seealso \code{\link{roctoPack}}
 #'  
 #' @export
-newJob <- function(name = "roctoJob",
-                   path = ".") {
-  if (dir.exists(file.path(path,name))){
-    over <-  utils::menu(c("Yes", "No"), title="Directory already exists. Overwrite?")
+roctoNew <- function(name = "roctoJob",
+                   path = ".",
+                   interactive = TRUE) {
+  if (dir.exists(file.path(path,name))) {
+    if (interactive) {
+      over <-  utils::menu(c("Yes", "No"), 
+                           title = "Directory already exists. Overwrite?")
+    } else {
+      over <- 1
+    }
     if (over == 1) {
       unlink(file.path(path, name), recursive = TRUE)
     } else {
@@ -47,8 +53,15 @@ newJob <- function(name = "roctoJob",
   if (inherits(b, "try-error")) {
     stop(sprintf("Failed to create template in dir %s", dir))
   }
-  changewd <- utils::menu(c("Yes", "No"), title="Set working directory to created folder?")
-  edit <- utils::menu(c("Yes", "No"), title="Open main and param files?")
+  
+  if (interactive) {
+    changewd <- utils::menu(c("Yes", "No"), 
+                            title = "Set working directory to created folder?")
+    edit <- utils::menu(c("Yes", "No"), 
+                        title = "Open main and param files?")
+  } else {
+    changewd <- edit <- 0
+  }
   if (edit == 1) {
     file.edit(file.path(dir, "main.R"))
     file.edit(file.path(dir, "params.R"))
@@ -69,10 +82,10 @@ newJob <- function(name = "roctoJob",
 #' 
 #' @return Invisible boolean TRUE
 #' 
-#' @seealso \code{\link{newJob}}, \code{\link{resultsToList}}
+#' @seealso \code{\link{roctoNew}}, \code{\link{roctoResults}}
 #'  
 #' @export
-packJob <- function(path = ".", verbose = FALSE) {
+roctoPack <- function(path = ".", verbose = FALSE) {
   initwd <- getwd()
   validJob <- jobPrepped <- jobPacked <- FALSE
   tdir <- tempdir()
@@ -103,10 +116,10 @@ packJob <- function(path = ".", verbose = FALSE) {
 #' 
 #' @return List with \code{nIter} elements, each containing the results object of one iteration.
 #' 
-#' @seealso \code{\link{newJob}}, \code{\link{packJob}}
+#' @seealso \code{\link{roctoNew}}, \code{\link{roctoPack}}
 #'  
 #' @export
-resultsToList <- function(roctoResults) {
+roctoResults <- function(roctoResults) {
   if (!dir.exists(roctoResults)){
     stop("Results directory not found")
   }
@@ -298,6 +311,7 @@ resultsToList <- function(roctoResults) {
   return(invisible(TRUE))
 }
 
+# Open a folder
 .openFolder <- function(pathname = ".") {
   os <- Sys.info()['sysname']
   if (os == "Windows") {
@@ -309,7 +323,7 @@ resultsToList <- function(roctoResults) {
   }
 }
 
-
+# regex all used packages from a rocto folder
 .findUsedPackages <- function(file, namesOnly = FALSE) {
   # Determine packages used
   if (!class(text)=="character")
