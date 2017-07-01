@@ -13,7 +13,7 @@ expect_dir_exists <- function(dir) {
 
 test_that("Correct files are created", {
   success <- roctoNew(interactive = FALSE)
-  expect_true(base, info = "roctoNew function did not return true")
+  expect_true(success, info = "roctoNew function did not return true")
   expect_dir_exists("roctoJob")
   expect_file_exists("roctoJob/main.R")
   expect_file_exists("roctoJob/params.R")
