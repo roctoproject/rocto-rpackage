@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="TBD" width="20%"></img>
+  <img src="https://raw.githubusercontent.com/roctoproject/rocto-rpackage/master/icon.png" width="15%"></img>
   <h1 align="center">rocto</h1>
   <h4 align="center">Perform computation on a worldwide distributed cluster</h4>
   <p align="center">
