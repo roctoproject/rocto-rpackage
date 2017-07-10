@@ -6,3 +6,5 @@ sudo: true
 cache: packages
 r:
   - devel
+before_script:
+  - Rscript -e 'devtools::test()'
