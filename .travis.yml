@@ -7,4 +7,4 @@ cache: packages
 r:
   - devel
 before_script:
-  - Rscript -e 'devtools::test()'
+  - Rscript -e 'install.packages("roxygen2");devtools::test()'
