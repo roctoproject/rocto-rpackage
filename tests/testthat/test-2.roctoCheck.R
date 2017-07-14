@@ -1,5 +1,5 @@
 context("Job checking")
-capture.output({
+a <- capture.output({
   wrongParams <- tryCatch(roctoCheck("tests/lib/1-wrongParams"), 
                           error = function(e) e,
                           warning = function(w) w)
@@ -12,7 +12,7 @@ capture.output({
   noData <- tryCatch(roctoCheck("tests/lib/4-noData"), 
                      error = function(e) e,
                      warning = function(w) w)
-}, file = "NUL")
+})
 
 
 test_that("Parameter mismatch is detected", {
@@ -29,3 +29,4 @@ test_that("Missing used files are detected", {
   expect_true(inherits(noData, "simpleWarning"), 
               info = "Lack of data file not detected")
 })
+
