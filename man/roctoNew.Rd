@@ -21,5 +21,5 @@ Creates a skeleton for a new \code{rocto} job in the correct format. Also allows
 to automatically set the working directory and open the param and main files.
 }
 \seealso{
-\code{\link{roctoPack}}
+\code{\link{roctoCheck}} \code{\link{roctoPack}}
 }

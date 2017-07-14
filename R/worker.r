@@ -17,7 +17,7 @@
 roctoRun <- function(roctoJob, outputDir, iterId = "test"){
   filebase <- strsplit(basename(roctoJob), "\\.")[[1]]
   if (tolower(filebase[2]) != "rocto") {
-    stop("Supply proper roctoJob file")
+    stop(sprintf("%s is not a .rocto file.", roctoJob))
   } 
   
   outputPath <- suppressWarnings(normalizePath(outputDir)) # TODO gracefully catch "dir does not exist"
@@ -37,26 +37,9 @@ roctoRun <- function(roctoJob, outputDir, iterId = "test"){
     stop("Unzip failed")
   }
   
-  oldwd <- getwd()
-  setwd(file.path(tdir, filebase[1]))
-  
-  if (iterId == "test"){
-    source("params.R")
-    p <- testParams
-  } else {
-    load("grid.Rdata")
-    p <- as.list(grid[iterId,])
-  }
-  
-  source("main.R")
-  
-  # convert parameters to correct order
-  pSorted <- lapply(names(formals(main)), function(n) { p[[n]] })
-  
-  # perform function
-  o <- try(do.call(main, pSorted))
+  tempwd <- file.path(tdir, filebase[1])
+  o <- .runJob(tempwd, iterId)
   save(o, file = file.path(outputPath, paste0(filebase[1],"-",iterId,".Rdata")))
-  setwd(oldwd)
   
   return(invisible(TRUE))
 }
