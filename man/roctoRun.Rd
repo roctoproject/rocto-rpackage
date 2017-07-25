@@ -18,7 +18,10 @@ should be run, or whether the test parameters should be used.}
 Invisible boolean TRUE.
 }
 \description{
-This function runs one rocto job iteration - a "task".
+This function runs one rocto job iteration - a "task". This function is
+usually not called by the user - it is used by the desktop app to run 
+rocto tasks. Nevertheless, a user can call this function to try out their 
+rocto job.
 }
 \seealso{
 \code{\link{roctoNew}}, \code{\link{roctoPack}}, \code{\link{roctoResults}}

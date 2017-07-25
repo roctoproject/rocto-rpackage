@@ -1,8 +1,11 @@
-# Evaluate a task
+# Worker-related functions for rocto
 
 #' Evaluate one iteration from a rocto job.
 #' 
-#' This function runs one rocto job iteration - a "task".
+#' This function runs one rocto job iteration - a "task". This function is
+#' usually not called by the user - it is used by the desktop app to run 
+#' rocto tasks. Nevertheless, a user can call this function to try out their 
+#' rocto job.
 #' 
 #' @param roctoJob <character> Path to a \code{.rocto} file containing the job.
 #' @param outputDir <character> Full directory where the output file should be saved.

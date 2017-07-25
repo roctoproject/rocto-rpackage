@@ -1,13 +1,4 @@
 # The functions for rocto
-.onAttach <- function(libname, pkgname) {
-  packageStartupMessage("                        __
-       _________  _____/ /_____
-      / ___/ __ \\/ ___/ __/ __ \\
-     / /  / /_/ / /__/ /_/ /_/ /
-    /_/   \\____/\\___/\\__/\\____/\n")
-  packageStartupMessage(paste0("    ", utils::packageDescription("rocto", fields = "Title")),"\n")
-}
-
 
 #' Initialise a new rocto job
 #' 
@@ -89,7 +80,7 @@ roctoNew <- function(name = "roctoJob",
 #' @export
 roctoCheck <- function(path=".") {
   tdir <- tempdir()
-  valid <- .roctoCheck(path, tdir, interactive = FALSE)
+  valid <- .checkJob(path, tdir, interactive = FALSE)
   if (valid) {
     cat("\nYour rocto job is valid.")
   }
@@ -107,7 +98,7 @@ roctoCheck <- function(path=".") {
 #' 
 #' @return Invisible boolean TRUE
 #' 
-#' @seealso \code{\link{roctoNew}}, \code{\link{roctoResults}}
+#' @seealso \code{\link{roctoCheck}}, \code{\link{roctoResults}}
 #'  
 #' @export
 roctoPack <- function(path = ".", verbose = FALSE) {

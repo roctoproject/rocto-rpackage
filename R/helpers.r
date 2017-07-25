@@ -1,5 +1,20 @@
+# Internal functions for rocto
+
+# Package-related functions ----
+# Display a nice rocto message when the package is loaded.
+.onAttach <- function(libname, pkgname) {
+  packageStartupMessage("                        __
+       _________  _____/ /_____
+      / ___/ __ \\/ ___/ __/ __ \\
+     / /  / /_/ / /__/ /_/ /_/ /
+    /_/   \\____/\\___/\\__/\\____/\n")
+  packageStartupMessage(paste0("    ", utils::packageDescription("rocto", fields = "Title")),"\n")
+}
+
+
+# Job-related functions ----
 # Check whether directory is a valid job
-.roctoCheck <- function(dir, tdir, interactive = TRUE) {
+checkJob <- function(dir, tdir, interactive = TRUE) {
   fulldir <- normalizePath(dir)
   wrns <- msgs <- c()
   if (!dir.exists(dir)) {
@@ -152,17 +167,21 @@
   colnames(grid) <- names(gridList)
   save(grid, file = file.path(tempwd,"grid.Rdata"))
   
+  # profile the job
+  prof <- .profileJob(fulldir)
+  
   # create meta information
   meta <- list(
     "nParams" = ncol(grid), 
     "params" = colnames(grid),
     "testParams" = gridEnv[["testParams"]],
-    "nIter" = nrow(grid), 
-    "dataSize" = file.size("data"), 
+    "nIter" = nrow(grid),
+    "dataSize" = .folderSize(file.path(fulldir, "data")),
+    "memorySize" = prof[["outputSize"]],
+    "cpuTime" = prof[["timeRequired"]],
     "RInfo" = as.list(unlist(version)),
-    "RPackages" = list(
-      
-    ))
+    "RPackages" = .findUsedPackages(file.path(fulldir, "main.R"))
+  )
   
   jsonMeta <- jsonlite::toJSON(meta, pretty = TRUE)
   write(jsonMeta, file = "meta.json")
@@ -194,15 +213,59 @@
   return(invisible(TRUE))
 }
 
+# run a job in its own fully separated environment
+.runJob <- function(dir, iterId) {
+  # https://stackoverflow.com/questions/45117441/recursively-source-files-to-environment/45118250#45118250
+  # create environment
+  ne <- new.env()
+  # redefine source
+  source <- function(file, local = ne, ...) base::source(file, local, ...)
+  o <- NULL
+  .withDir(dir, {
+    if (iterId == "test") {
+      source("params.R")
+      p <- ne$testParams
+    } else {
+      load("grid.Rdata")
+      p <- as.list(ne$grid[iterId,])
+    }
+    
+    source("main.R")
+    
+    # convert parameters to correct order
+    pSorted <- lapply(names(formals(ne$main)), function(n) { p[[n]] })
+    
+    # perform function
+    o <- try(do.call(ne$main, pSorted))
+  })
+  return(o)
+}
+
+# generate information about a job by running its test parameters
+.profileJob <- function(dir) {
+  # profile the job
+  jobDir <- normalizePath(dir)
+  cat("\nRunning test iteration of", basename(jobDir))
+  t0 <- Sys.time()
+  o <- .runJob(jobDir, "test")
+  timePassed <- as.numeric(Sys.time() - t0, units = "secs")
+  oSize <- as.numeric(object.size(o)) # object size in bytes
+  return(list(outputSize = oSize, timeRequired = timePassed))
+}
+
+
+# Convenience functions ----
 # regex all used packages from a rocto folder
 .findUsedPackages <- function(file, namesOnly = FALSE) {
   # Determine packages used
-  if (!class(text) == "character")
+  if (!class(file) == "character")
     stop("Input a string")
   
-  text <- paste(readLines(file, warn = FALSE),collapse="\n")
+  fullPath <- normalizePath(file)
+  dir <- dirname(fullPath)
+  file <- basename(fullPath)
   
-  # Init
+  text <- paste(readLines(fullPath, warn = FALSE), collapse = "\n")
   
   # Check if this file sources other files
   regex <- "(?<=source\\([\\\"\\']).*(?=[\\\"\\']\\))"
@@ -211,10 +274,11 @@
   
   # If it does, recursively get the names of packages from those files
   sourcedPackages <- list()
-  if (any(matches>=0)){
-    for (m in seq_along(matches)){
-      sourceFile <- substr(text,matches[m],matches[m]+lengths[m]-1)
-      sourcedPackages[[m]] <- .findUsedPackages(sourceFile, namesOnly = TRUE)
+  if (any(matches >= 0)) {
+    for (m in seq_along(matches)) {
+      sourceFile <- substr(text, matches[m], matches[m] + lengths[m] - 1)
+      sourcePath <- file.path(dir, sourceFile)
+      sourcedPackages[[m]] <- .findUsedPackages(sourcePath, namesOnly = TRUE)
     }
   }
   
@@ -225,9 +289,9 @@
   
   # If there are any, get their names
   usedPackages <- NULL
-  if (any(matches>=0)){
-    for (m in seq_along(matches)){
-      usedPackages[m] <- substr(text,matches[m],matches[m]+lengths[m]-1)
+  if (any(matches >= 0)) {
+    for (m in seq_along(matches)) {
+      usedPackages[m] <- substr(text, matches[m], matches[m] + lengths[m] - 1)
     }
   }
   
@@ -236,14 +300,14 @@
   
   if (namesOnly) return(usedPackages)
   
-  if (length(usedPackages)>0) {
+  if (length(usedPackages) > 0) {
     
     # Get the version number of each package and return output
     uniquePackages <- unique(usedPackages)
-    pkgElement <- list("name"=NULL, "version"=NULL)
+    pkgElement <- list("name" = NULL, "version" = NULL)
     out <- rep(list(pkgElement), length(uniquePackages))
     
-    for (p in seq_along(uniquePackages)){
+    for (p in seq_along(uniquePackages)) {
       pkg <- uniquePackages[p]
       ver <- as.character(utils::packageVersion(pkg))
       out[[p]][["name"]] <- pkg
@@ -333,25 +397,15 @@
   return(unique(usedFiles))
 }
 
-
-.runJob <- function(dir, iterId) {
-  o <- NULL
-  .withDir(dir, {
-    if (iterId == "test") {
-      source("params.R")
-      p <- testParams
-    } else {
-      load("grid.Rdata")
-      p <- as.list(grid[iterId,])
-    }
-    
-    source("main.R")
-    
-    # convert parameters to correct order
-    pSorted <- lapply(names(formals(main)), function(n) { p[[n]] })
-    
-    # perform function
-    o <- try(do.call(main, pSorted))
-  })
+# get a folder's size in bytes
+.folderSize <- function(dir) {
+  o <- 0
+  if (dir.exists(dir)) {
+    o <- sum(file.info(list.files(dir, 
+                                  all.files = TRUE,
+                                  full.names = TRUE,
+                                  include.dirs = TRUE,
+                                  recursive = TRUE))[["size"]]) 
+  }
   return(o)
 }

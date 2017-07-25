@@ -19,5 +19,5 @@ This function performs checks and then packs a raw \code{rocto} job directory
 into a single file for uploading to the \code{rocto} volunteer cluster.
 }
 \seealso{
-\code{\link{roctoNew}}, \code{\link{roctoResults}}
+\code{\link{roctoCheck}}, \code{\link{roctoResults}}
 }

@@ -1,4 +1,6 @@
-# evaluate a function using a temporary working directory and optionally a 
+# Utility functions for rocto
+
+# evaluate a function using a temporary working directory and optionally a
 # temporary environment
 .withDir <- function(tdir, expr, envir = NULL) {
   oldWd <- getwd()

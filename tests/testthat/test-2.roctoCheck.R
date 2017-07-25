@@ -1,4 +1,4 @@
-context("Job checking")
+context("Job content checking")
 a <- capture.output({
   wrongParams <- tryCatch(roctoCheck("tests/lib/1-wrongParams"), 
                           error = function(e) e,
