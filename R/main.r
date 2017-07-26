@@ -1,4 +1,4 @@
-# The functions for rocto
+# User-facing functions for rocto
 
 #' Initialise a new rocto job
 #' 
@@ -54,8 +54,8 @@ roctoNew <- function(name = "roctoJob",
       changewd <- edit <- 0
     }
     if (edit == 1) {
-      file.edit(file.path(dir, "main.R"))
-      file.edit(file.path(dir, "params.R"))
+      get("file.edit")(file.path(dir, "main.R"))
+      get("file.edit")(file.path(dir, "params.R"))
     }
     if (changewd == 1) {
       setwd(dir)
@@ -106,7 +106,7 @@ roctoPack <- function(path = ".", verbose = FALSE) {
   validJob <- jobPrepped <- jobPacked <- FALSE
   tdir <- tempdir()
   # first, check whether directory is a valid job
-  validJob <- .roctoCheck(path, tdir)
+  validJob <- .checkJob(path, tdir)
   if (validJob) {
     # prepare job for packing and gather information
     jobPrepped <- .prepJob(path, tdir, verbose)
@@ -136,9 +136,9 @@ roctoPack <- function(path = ".", verbose = FALSE) {
 #'  
 #' @export
 roctoResults <- function(roctoResults) {
-  if (!dir.exists(roctoResults)){
+  if (!dir.exists(roctoResults)) {
     stop("Results directory not found")
   }
   return(lapply(list.files(roctoResults, full.names = TRUE), 
-                function(f) {load(f); return(o)}))
+                function(f) {load(f); return(get("o"))}))
 }

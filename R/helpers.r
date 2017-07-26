@@ -14,7 +14,7 @@
 
 # Job-related functions ----
 # Check whether directory is a valid job
-checkJob <- function(dir, tdir, interactive = TRUE) {
+.checkJob <- function(dir, tdir, interactive = TRUE) {
   fulldir <- normalizePath(dir)
   wrns <- msgs <- c()
   if (!dir.exists(dir)) {
@@ -249,7 +249,7 @@ checkJob <- function(dir, tdir, interactive = TRUE) {
   t0 <- Sys.time()
   o <- .runJob(jobDir, "test")
   timePassed <- as.numeric(Sys.time() - t0, units = "secs")
-  oSize <- as.numeric(object.size(o)) # object size in bytes
+  oSize <- as.numeric(utils::object.size(o)) # object size in bytes
   return(list(outputSize = oSize, timeRequired = timePassed))
 }
 
