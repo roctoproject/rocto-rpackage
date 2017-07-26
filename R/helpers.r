@@ -184,7 +184,7 @@
   )
   
   jsonMeta <- jsonlite::toJSON(meta, pretty = TRUE)
-  write(jsonMeta, file = "meta.json")
+  write(jsonMeta, file = file.path(tempwd,"meta.json"))
   
   if (verbose) {
     print(grid)
@@ -205,7 +205,7 @@
   }
   zip::zip(filename, basename(fulldir), recurse = TRUE)
   file.copy(from = filename, to = dirname(fulldir))
-  open <- utils::menu(c("Yes", "No"), title="Open containing folder?")
+  open <- utils::menu(c("Yes", "No"), title = "\nOpen containing folder?")
   if (open == 1) {
     .openFolder(dirname(fulldir))
   }
@@ -245,7 +245,7 @@
 .profileJob <- function(dir) {
   # profile the job
   jobDir <- normalizePath(dir)
-  cat("\nRunning test iteration of", basename(jobDir))
+  cat(paste0("\nRunning test iteration of '", basename(jobDir), "'."))
   t0 <- Sys.time()
   o <- .runJob(jobDir, "test")
   timePassed <- as.numeric(Sys.time() - t0, units = "secs")

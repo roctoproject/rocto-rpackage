@@ -108,9 +108,11 @@ roctoPack <- function(path = ".", verbose = FALSE) {
   # first, check whether directory is a valid job
   validJob <- .checkJob(path, tdir)
   if (validJob) {
+    cat("\nYour rocto job is valid.")
     # prepare job for packing and gather information
     jobPrepped <- .prepJob(path, tdir, verbose)
     if (jobPrepped) {
+      cat("\nJob information saved.\n")
       # package the job, copy it next to the original and ask to open folder
       jobPacked <- .zipJob(path, tdir)
     }
