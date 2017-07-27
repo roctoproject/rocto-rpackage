@@ -165,7 +165,8 @@
   }
   grid <- expand.grid(gridList, stringsAsFactors = FALSE)
   colnames(grid) <- names(gridList)
-  save(grid, file = file.path(tempwd,"grid.Rdata"))
+  jgrid <- jsonlite::toJSON(grid)
+  write(jgrid, file = file.path(tempwd,"grid.json"))
   
   # profile the job
   prof <- .profileJob(fulldir)
@@ -226,7 +227,7 @@
       source("params.R")
       p <- ne$testParams
     } else {
-      load("grid.Rdata")
+      ne$grid <- jsonlite::fromJSON(readLines("grid.json"))
       p <- as.list(ne$grid[iterId,])
     }
     
