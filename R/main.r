@@ -101,7 +101,7 @@ roctoCheck <- function(path=".") {
 #' @seealso \code{\link{roctoCheck}}, \code{\link{roctoResults}}
 #'  
 #' @export
-roctoPack <- function(path = ".", verbose = FALSE) {
+roctoPack <- function(path = ".", verbose = TRUE) {
   initwd <- getwd()
   validJob <- jobPrepped <- jobPacked <- FALSE
   tdir <- tempdir()
@@ -110,11 +110,11 @@ roctoPack <- function(path = ".", verbose = FALSE) {
   if (validJob) {
     cat("\nYour rocto job is valid.")
     # prepare job for packing and gather information
-    jobPrepped <- .prepJob(path, tdir, verbose)
+    jobPrepped <- .prepJob(path, tdir)
     if (jobPrepped) {
       cat("\nJob information saved.\n")
       # package the job, copy it next to the original and ask to open folder
-      jobPacked <- .zipJob(path, tdir)
+      jobPacked <- .zipJob(path, tdir, verbose)
     }
   }
   

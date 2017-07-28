@@ -18,31 +18,60 @@
 #'  
 #' @export
 roctoRun <- function(roctoJob, outputDir, iterId = "test"){
-  filebase <- strsplit(basename(roctoJob), "\\.")[[1]]
-  if (tolower(filebase[2]) != "rocto") {
-    stop(sprintf("%s is not a .rocto file.", roctoJob))
-  } 
+  
+  fileBase <- basename(roctoJob)
+  fullPath <- normalizePath(roctoJob)
+  tdir <- tempdir()
+  
+  if (dir.exists(fullPath)) {
+    # roctoJob is a directory, no unzip needed
+    # check if grid.json, meta.json, and main.R exist
+    if (!all(file.exists(file.path(fullPath, "grid.json")),
+             file.exists(file.path(fullPath, "meta.json")),
+             file.exists(file.path(fullPath, "main.R")))) {
+      stop(sprintf("%s is not an extracted rocto folder. Run roctoPack().", 
+                   roctoJob))
+    }
+    copyPath <- file.path(tdir, fileBase)
+    if (file.exists(copyPath)) {
+      unlink(copyPath, recursive = TRUE)
+    }
+    dir.create(copyPath)
+    if (!all(file.copy(list.files(fullPath, include.dirs = TRUE, 
+                                  full.names = TRUE), 
+                       copyPath, recursive = TRUE))) {
+      stop("Folder could not be copied to temporary directory.")
+    }
+  } else if (file.exists(fullPath)) {
+    # roctoJob is a file, unzip needed
+    ext <- substr(fileBase, 
+                  gregexpr("\\.(?!.*\\.)", fileBase, perl = TRUE)[[1]][1], 
+                  nchar(fileBase))
+    if (tolower(ext) != ".rocto") {
+      stop(sprintf("%s is not a .rocto file.", roctoJob))
+    }
+    fileBase <- substr(fileBase, 1, gregexpr("\\.(?!.*\\.)", 
+                                             fileBase, 
+                                             perl = TRUE)[[1]][1] - 1)
+    copyPath <- file.path(tdir, fileBase)
+    if (file.exists(copyPath)) {
+      unlink(copyPath, recursive = TRUE)
+    }
+    uz <- try(utils::unzip(fullPath, exdir = tdir))
+    if (length(uz) == 0) {
+      stop("Unzip failed")
+    }
+  } else {
+    stop("Rocto job folder or file does not exist.")
+  }
   
   outputPath <- suppressWarnings(normalizePath(outputDir)) # TODO gracefully catch "dir does not exist"
   if (!dir.exists(outputPath)) {
     dir.create(outputPath, recursive = TRUE)
   }
   
-  fullpath <- normalizePath(roctoJob)
-  tdir <- tempdir()
-  if (dir.exists(file.path(tdir, filebase[1]))) {
-    unlink(file.path(tdir, filebase[1]), recursive = TRUE)
-  }
-  
-  # unzip the file in order to use it
-  uz <- try(utils::unzip(fullpath, exdir = tdir))
-  if (inherits(uz, "try-error")) {
-    stop("Unzip failed")
-  }
-  
-  tempwd <- file.path(tdir, filebase[1])
-  o <- .runJob(tempwd, iterId)
-  save(o, file = file.path(outputPath, paste0(filebase[1],"-",iterId,".Rdata")))
+  o <- .runJob(copyPath, iterId)
+  save(o, file = file.path(outputPath, paste0(fileBase,"-",iterId,".Rdata")))
   
   return(invisible(TRUE))
 }

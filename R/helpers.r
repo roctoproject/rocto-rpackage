@@ -146,7 +146,7 @@
 }
 
 # Prepare job for packing and gather information
-.prepJob <- function(dir, tdir, verbose = FALSE) {
+.prepJob <- function(dir, tdir) {
   fulldir <- normalizePath(dir)
   # first copy to tempdir and switch to it.
   copySuccess <- file.copy(fulldir, tdir, recursive = TRUE)
@@ -165,7 +165,8 @@
   }
   grid <- expand.grid(gridList, stringsAsFactors = FALSE)
   colnames(grid) <- names(gridList)
-  save(grid, file = file.path(tempwd,"grid.Rdata"))
+  jgrid <- jsonlite::toJSON(grid)
+  write(jgrid, file = file.path(tempwd,"grid.json"))
   
   # profile the job
   prof <- .profileJob(fulldir)
@@ -186,30 +187,32 @@
   jsonMeta <- jsonlite::toJSON(meta, pretty = TRUE)
   write(jsonMeta, file = file.path(tempwd,"meta.json"))
   
-  if (verbose) {
-    print(grid)
-    print(jsonMeta)
-  }
-  
   return(invisible(TRUE))
 }
 
 # Package the job, copy it next to the original folder and ask to open folder
-.zipJob <- function(dir, tdir) {
+.zipJob <- function(dir, tdir, verbose = TRUE) {
   fulldir <- normalizePath(dir)
-  oldwd <- getwd()
-  setwd(tdir)
-  filename <- paste0(basename(fulldir), ".rocto")
+  filename <- paste0(fulldir, ".rocto")
   if (file.exists(filename)) {
     unlink(filename)
   }
-  zip::zip(filename, basename(fulldir), recurse = TRUE)
-  file.copy(from = filename, to = dirname(fulldir))
-  open <- utils::menu(c("Yes", "No"), title = "\nOpen containing folder?")
+  .withDir(tdir, {
+    zip::zip(file.path(dirname(fulldir),basename(filename)), 
+             basename(fulldir), 
+             recurse = TRUE)
+  })
+  
+  if (verbose) {
+    open <- utils::menu(c("Yes", "No"), title = "\nOpen containing folder?")
+  } else {
+    open <- 2
+  }
+  
   if (open == 1) {
     .openFolder(dirname(fulldir))
   }
-  setwd(oldwd)
+  
   return(invisible(TRUE))
 }
 
@@ -226,7 +229,7 @@
       source("params.R")
       p <- ne$testParams
     } else {
-      load("grid.Rdata")
+      ne$grid <- jsonlite::fromJSON(readLines("grid.json"))
       p <- as.list(ne$grid[iterId,])
     }
     

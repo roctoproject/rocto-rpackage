@@ -4,7 +4,7 @@
 \alias{roctoPack}
 \title{Pack a rocto directory for distribution}
 \usage{
-roctoPack(path = ".", verbose = FALSE)
+roctoPack(path = ".", verbose = TRUE)
 }
 \arguments{
 \item{path}{<character> The root of the raw rocto job directory.}
