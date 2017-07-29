@@ -128,9 +128,9 @@ roctoPack <- function(path = ".", verbose = TRUE) {
 
 #' Load results from your rocto job into R
 #' 
-#' This function loads all the job results from a .rocres file into R at once.
+#' This function loads all the job results from a \code{.rocres} file into R at once.
 #' 
-#' @param roctoResults <character> Path to a rocto results file
+#' @param rocresPath <character> Path to a rocto results (\code{.rocres}) file
 #' 
 #' @return List with \code{nIter} elements, each containing the results object of one iteration.
 #' 
