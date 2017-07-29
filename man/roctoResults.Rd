@@ -4,16 +4,16 @@
 \alias{roctoResults}
 \title{Load results from your rocto job into R}
 \usage{
-roctoResults(roctoResults)
+roctoResults(rocresPath)
 }
 \arguments{
-\item{roctoResults}{<character> Path to a rocto results folder.}
+\item{roctoResults}{<character> Path to a rocto results file}
 }
 \value{
 List with \code{nIter} elements, each containing the results object of one iteration.
 }
 \description{
-This function loads all the job results from a results folder into R at once.
+This function loads all the job results from a .rocres file into R at once.
 }
 \seealso{
 \code{\link{roctoNew}}, \code{\link{roctoPack}}

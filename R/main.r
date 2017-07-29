@@ -128,19 +128,39 @@ roctoPack <- function(path = ".", verbose = TRUE) {
 
 #' Load results from your rocto job into R
 #' 
-#' This function loads all the job results from a results folder into R at once.
+#' This function loads all the job results from a .rocres file into R at once.
 #' 
-#' @param roctoResults <character> Path to a rocto results folder.
+#' @param roctoResults <character> Path to a rocto results file
 #' 
 #' @return List with \code{nIter} elements, each containing the results object of one iteration.
 #' 
 #' @seealso \code{\link{roctoNew}}, \code{\link{roctoPack}}
 #'  
 #' @export
-roctoResults <- function(roctoResults) {
-  if (!dir.exists(roctoResults)) {
-    stop("Results directory not found")
+roctoResults <- function(rocresPath) {
+  filePath <- normalizePath(rocresPath)
+  ext <- substr(basename(filePath), 
+                gregexpr("\\.(?!.*\\.)", 
+                         basename(filePath), 
+                         perl = TRUE)[[1]][1], 
+                nchar(basename(filePath)))
+  
+  if (!file.exists(filePath)) {
+    stop("Results file not found")
+  } else if (ext != ".rocres") {
+    stop("File is not a .rocres file")
   }
-  return(lapply(list.files(roctoResults, full.names = TRUE), 
-                function(f) {load(f); return(get("o"))}))
+  
+  tempenv <- new.env()
+  tdir <- file.path(tempdir(), "rocres")
+  if (file.exists(tdir)) {
+    unlink(tdir)
+  }
+  utils::unzip(rocresPath, exdir = tdir)
+  
+  return(lapply(list.files(tdir, full.names = TRUE, pattern = ".*\\.Rdata"), 
+                function(f) {
+                  load(f, envir = tempenv)
+                  return(get("o", envir = tempenv))
+                }))
 }
