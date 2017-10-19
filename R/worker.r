@@ -57,7 +57,7 @@ roctoRun <- function(roctoJob, outputDir, iterId = "test"){
     if (file.exists(copyPath)) {
       unlink(copyPath, recursive = TRUE)
     }
-    uz <- try(utils::unzip(fullPath, exdir = copyPath))
+    uz <- try(utils::unzip(fullPath, exdir = tdir))
     if (length(uz) == 0) {
       stop("Unzip failed")
     }
@@ -70,7 +70,7 @@ roctoRun <- function(roctoJob, outputDir, iterId = "test"){
     dir.create(outputPath, recursive = TRUE)
   }
 
-  o <- .runJob(file.path(copyPath, 'roctoJob'), iterId)
+  o <- .runJob(file.path(copyPath), iterId)
   save(o, file = file.path(outputPath, paste0(fileBase,"-",iterId,".Rdata")))
 
   return(invisible(TRUE))
