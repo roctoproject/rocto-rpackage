@@ -1,29 +1,25 @@
 {
-  "nParams": [2],
-  "params": ["param1", "param2"],
-  "testParams": {
-    "param1": [1],
-    "param2": [100]
-  },
-  "nIter": [9],
-  "dataSize": [144],
-  "memorySize": [48],
-  "cpuTime": [0],
-  "RInfo": {
-    "platform": ["x86_64-w64-mingw32"],
-    "arch": ["x86_64"],
-    "os": ["mingw32"],
-    "system": ["x86_64, mingw32"],
-    "status": [""],
-    "major": ["3"],
-    "minor": ["4.0"],
-    "year": ["2017"],
-    "month": ["04"],
-    "day": ["21"],
-    "svn rev": ["72570"],
-    "language": ["R"],
-    "version.string": ["R version 3.4.0 (2017-04-21)"],
-    "nickname": ["You Stupid Darkness"]
-  },
-  "RPackages": {}
+  "version": ["0.1.0"],
+  "requirements": {
+    "memorySize": [48],
+    "cpuTime": [0.0174],
+    "packages": {},
+    "RInfo": {
+      "platform": ["x86_64-w64-mingw32"],
+      "arch": ["x86_64"],
+      "os": ["mingw32"],
+      "system": ["x86_64, mingw32"],
+      "status": [""],
+      "major": ["3"],
+      "minor": ["4.0"],
+      "year": ["2017"],
+      "month": ["04"],
+      "day": ["21"],
+      "svn rev": ["72570"],
+      "language": ["R"],
+      "version.string": ["R version 3.4.0 (2017-04-21)"],
+      "nickname": ["You Stupid Darkness"]
+    },
+    "cores": [1]
+  }
 }

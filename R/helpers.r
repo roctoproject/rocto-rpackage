@@ -171,17 +171,16 @@
   # profile the job
   prof <- .profileJob(fulldir)
   
-  # create meta information
+  # create meta information -- see api docs
   meta <- list(
-    "nParams" = ncol(grid), 
-    "params" = colnames(grid),
-    "testParams" = gridEnv[["testParams"]],
-    "nIter" = nrow(grid),
-    "dataSize" = .folderSize(file.path(fulldir, "data")),
-    "memorySize" = prof[["outputSize"]],
-    "cpuTime" = prof[["timeRequired"]],
-    "RInfo" = as.list(unlist(version)),
-    "RPackages" = .findUsedPackages(file.path(fulldir, "main.R"))
+    "version" = "0.1.0",
+    "requirements" = list(
+      "memorySize" = prof[["outputSize"]],
+      "cpuTime" = prof[["timeRequired"]],
+      "packages" = .findUsedPackages(file.path(fulldir, "main.R")),
+      "RInfo" = as.list(unlist(version)),
+      "cores" = .findNCores(file.path(fulldir, "main.R")) # return 1 for now
+    )
   )
   
   jsonMeta <- jsonlite::toJSON(meta, pretty = TRUE)
@@ -411,4 +410,9 @@
                                   recursive = TRUE))[["size"]]) 
   }
   return(o)
+}
+
+# find the number of cores of a rocto dir
+.findNCores <- function(file) {
+  return(1) # return 1 for now
 }
