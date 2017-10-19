@@ -176,7 +176,7 @@
     "version" = "0.1.0",
     "requirements" = list(
       "memorySize" = prof[["outputSize"]],
-      "cpuTime" = prof[["timeRequired"]],
+      "cpuTime" = ceiling(prof[["timeRequired"]]),
       "packages" = .findUsedPackages(file.path(fulldir, "main.R")),
       "RInfo" = as.list(unlist(version)),
       "cores" = .findNCores(file.path(fulldir, "main.R")) # return 1 for now

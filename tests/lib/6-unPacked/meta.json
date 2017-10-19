@@ -2,7 +2,7 @@
   "version": ["0.1.0"],
   "requirements": {
     "memorySize": [48],
-    "cpuTime": [0.0174],
+    "cpuTime": [1],
     "packages": {},
     "RInfo": {
       "platform": ["x86_64-w64-mingw32"],
