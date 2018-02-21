@@ -4,10 +4,12 @@
 \alias{roctoCheck}
 \title{Check a rocto job}
 \usage{
-roctoCheck(path = ".")
+roctoCheck(path = ".", test = TRUE)
 }
 \arguments{
 \item{path}{<character> Path to existing \code{rocto} directory (default to current working directory)}
+
+\item{test}{<boolean> Test the job in addition to validating it, and return the results.}
 }
 \value{
 Invisible boolean valid job or not.

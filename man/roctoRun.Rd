@@ -19,8 +19,8 @@ Invisible boolean TRUE.
 }
 \description{
 This function runs one rocto job iteration - a "task". This function is
-usually not called by the user - it is used by the desktop app to run 
-rocto tasks. Nevertheless, a user can call this function to try out their 
+usually not called by the user - it is used by the desktop app to run
+rocto tasks. Nevertheless, a user can call this function to try out their
 rocto job.
 }
 \seealso{

@@ -72,19 +72,26 @@ roctoNew <- function(name = "roctoJob",
 #' from the default \code{rocto} folder format.
 #' 
 #' @param path <character> Path to existing \code{rocto} directory (default to current working directory)
+#' @param test <boolean> Test the job in addition to validating it, and return the results.
 #' 
 #' @return Invisible boolean valid job or not.
 #' 
 #' @seealso \code{\link{roctoNew}} \code{\link{roctoPack}}
 #'  
 #' @export
-roctoCheck <- function(path=".") {
+roctoCheck <- function(path = ".", test = TRUE) {
   tdir <- tempdir()
-  valid <- .checkJob(path, tdir, interactive = FALSE)
+  valid <- .checkJob(path, tdir, interactive = TRUE)
   if (valid) {
     cat("\nYour rocto job is valid.")
+    if (test) {
+      return(.runJob(path, "test"))
+    } else {
+      return(invisible(TRUE))
+    }
+  } else {
+    return(invisible(FALSE))
   }
-  return(invisible(valid == TRUE))
 }
 
 
