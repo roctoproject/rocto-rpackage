@@ -5,6 +5,5 @@ language: R
 sudo: true
 cache: packages
 r:
+  - release
   - devel
-before_script:
-  - Rscript -e 'if(!require(roxygen2)){install.packages("roxygen2")};devtools::test()'
