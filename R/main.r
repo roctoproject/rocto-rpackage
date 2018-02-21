@@ -27,7 +27,7 @@ roctoNew <- function(name = "roctoJob",
       if (over == 1) {
         unlink(file.path(path, name), recursive = TRUE)
       } else {
-        cat("Cancelled")
+        cat(crayon::red("Cancelled"))
         return(invisible(FALSE))
       }
     }
@@ -83,7 +83,7 @@ roctoCheck <- function(path = ".", test = TRUE) {
   tdir <- tempdir()
   valid <- .checkJob(path, tdir, interactive = TRUE)
   if (valid) {
-    cat("\nYour rocto job is valid.")
+    cat(crayon::green("\nYour rocto job is valid.\n"))
     if (test) {
       return(.runJob(path, "test"))
     } else {
@@ -115,18 +115,18 @@ roctoPack <- function(path = ".", verbose = TRUE) {
   # first, check whether directory is a valid job
   validJob <- .checkJob(path, tdir)
   if (validJob) {
-    cat("\nYour rocto job is valid.")
+    cat(crayon::silver("\nYour rocto job is valid."))
     # prepare job for packing and gather information
     jobPrepped <- .prepJob(path, tdir)
     if (jobPrepped) {
-      cat("\nJob information saved.\n")
+      cat(crayon::silver("\nJob information saved.\n"))
       # package the job, copy it next to the original and ask to open folder
       jobPacked <- .zipJob(path, tdir, verbose)
     }
   }
   
   if (validJob && jobPrepped && jobPacked) {
-    cat("Job successfully packed.")
+    cat(crayon::green("Job successfully packed."))
     return(invisible(TRUE))
   } else {
     return(invisible(FALSE))

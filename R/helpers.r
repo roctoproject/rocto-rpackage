@@ -115,7 +115,7 @@
   
   # Check for warnings and messages and return result
   if (length(wrns) > 0) {
-    cat("\nJob package check failed! Inspect the warning messages and adjust your code accordingly.")
+    cat(crayon::red("\nJob package check failed! Inspect the warning messages and adjust your code accordingly."))
     for (w in wrns) {
       warning(w, call. = FALSE)
     }
@@ -254,7 +254,7 @@
 .profileJob <- function(dir) {
   # profile the job
   jobDir <- normalizePath(dir)
-  cat(paste0("\nRunning test iteration of '", basename(jobDir), "'."))
+  cat(crayon::silver(paste0("\nRunning test iteration of '", basename(jobDir), "'.")))
   t0 <- Sys.time()
   o <- .runJob(jobDir, "test")
   timePassed <- as.numeric(Sys.time() - t0, units = "secs")
