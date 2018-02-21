@@ -27,7 +27,7 @@ roctoNew <- function(name = "roctoJob",
       if (over == 1) {
         unlink(file.path(path, name), recursive = TRUE)
       } else {
-        cat("Cancelled")
+        cat(crayon::red("Cancelled"))
         return(invisible(FALSE))
       }
     }
@@ -72,19 +72,26 @@ roctoNew <- function(name = "roctoJob",
 #' from the default \code{rocto} folder format.
 #' 
 #' @param path <character> Path to existing \code{rocto} directory (default to current working directory)
+#' @param test <boolean> Test the job in addition to validating it, and return the results.
 #' 
 #' @return Invisible boolean valid job or not.
 #' 
 #' @seealso \code{\link{roctoNew}} \code{\link{roctoPack}}
 #'  
 #' @export
-roctoCheck <- function(path=".") {
+roctoCheck <- function(path = ".", test = TRUE) {
   tdir <- tempdir()
-  valid <- .checkJob(path, tdir, interactive = FALSE)
+  valid <- .checkJob(path, tdir, interactive = TRUE)
   if (valid) {
-    cat("\nYour rocto job is valid.")
+    cat(crayon::green("\nYour rocto job is valid.\n"))
+    if (test) {
+      return(.runJob(path, "test"))
+    } else {
+      return(invisible(TRUE))
+    }
+  } else {
+    return(invisible(FALSE))
   }
-  return(invisible(valid == TRUE))
 }
 
 
@@ -108,18 +115,18 @@ roctoPack <- function(path = ".", verbose = TRUE) {
   # first, check whether directory is a valid job
   validJob <- .checkJob(path, tdir)
   if (validJob) {
-    cat("\nYour rocto job is valid.")
+    cat(crayon::silver("\nYour rocto job is valid."))
     # prepare job for packing and gather information
     jobPrepped <- .prepJob(path, tdir)
     if (jobPrepped) {
-      cat("\nJob information saved.\n")
+      cat(crayon::silver("\nJob information saved.\n"))
       # package the job, copy it next to the original and ask to open folder
       jobPacked <- .zipJob(path, tdir, verbose)
     }
   }
   
   if (validJob && jobPrepped && jobPacked) {
-    cat("Job successfully packed.")
+    cat(crayon::green("Job successfully packed."))
     return(invisible(TRUE))
   } else {
     return(invisible(FALSE))
@@ -128,19 +135,39 @@ roctoPack <- function(path = ".", verbose = TRUE) {
 
 #' Load results from your rocto job into R
 #' 
-#' This function loads all the job results from a results folder into R at once.
+#' This function loads all the job results from a \code{.rocres} file into R at once.
 #' 
-#' @param roctoResults <character> Path to a rocto results folder.
+#' @param rocresPath <character> Path to a rocto results (\code{.rocres}) file
 #' 
 #' @return List with \code{nIter} elements, each containing the results object of one iteration.
 #' 
 #' @seealso \code{\link{roctoNew}}, \code{\link{roctoPack}}
 #'  
 #' @export
-roctoResults <- function(roctoResults) {
-  if (!dir.exists(roctoResults)) {
-    stop("Results directory not found")
+roctoResults <- function(rocresPath) {
+  filePath <- normalizePath(rocresPath)
+  ext <- substr(basename(filePath), 
+                gregexpr("\\.(?!.*\\.)", 
+                         basename(filePath), 
+                         perl = TRUE)[[1]][1], 
+                nchar(basename(filePath)))
+  
+  if (!file.exists(filePath)) {
+    stop("Results file not found")
+  } else if (ext != ".rocres") {
+    stop("File is not a .rocres file")
   }
-  return(lapply(list.files(roctoResults, full.names = TRUE), 
-                function(f) {load(f); return(get("o"))}))
+  
+  tempenv <- new.env()
+  tdir <- file.path(tempdir(), "rocres")
+  if (file.exists(tdir)) {
+    unlink(tdir)
+  }
+  utils::unzip(rocresPath, exdir = tdir)
+  
+  return(lapply(list.files(tdir, full.names = TRUE, pattern = ".*\\.Rdata"), 
+                function(f) {
+                  load(f, envir = tempenv)
+                  return(get("o", envir = tempenv))
+                }))
 }

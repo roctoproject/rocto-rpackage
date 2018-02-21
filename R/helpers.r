@@ -8,7 +8,10 @@
       / ___/ __ \\/ ___/ __/ __ \\
      / /  / /_/ / /__/ /_/ /_/ /
     /_/   \\____/\\___/\\__/\\____/\n")
-  packageStartupMessage(paste0("    ", utils::packageDescription("rocto", fields = "Title")),"\n")
+  packageStartupMessage(paste0("    ", 
+                               utils::packageDescription("rocto", 
+                                                         fields = "Title")),
+                        "\n")
 }
 
 
@@ -25,7 +28,8 @@
     if (copySuccess) {
       tempwd <- file.path(tdir, basename(fulldir))
     } else {
-      stop("Temporary directory not available; could not check your package. Perhaps you don't have the correct permissions.")
+      stop("Temporary directory not available; could not check your package.", 
+           "Perhaps you don't have the correct permissions.")
     }
     
     lst <- list.files(tempwd)
@@ -37,8 +41,10 @@
       # create environment to evaluate the functions in main and params
       paramEnv <- new.env()
       mainEnv <- new.env()
-      mainSourced <- try(source(file.path(tempwd,"main.R"), mainEnv), silent = TRUE)
-      paramsSourced <- try(source(file.path(tempwd,"params.R"), paramEnv), silent = TRUE)
+      mainSourced <- try(source(file.path(tempwd,"main.R"), mainEnv), 
+                         silent = TRUE)
+      paramsSourced <- try(source(file.path(tempwd,"params.R"), paramEnv), 
+                           silent = TRUE)
       
       if (inherits(mainSourced, "try-error")) {
         # remove call
@@ -54,8 +60,8 @@
       
       if (!inherits(mainSourced, "try-error") && 
           !inherits(paramsSourced, "try-error")) {
-        # check that testParams exist in the params file and that they contain all
-        # iterated parameters
+        # check that testParams exist in the params file and that they contain 
+        # all iterated parameters
         parItr <- ls(paramEnv)
         if (!"testParams" %in% parItr) {
           wrns <- c(wrns, "testParams not found!")
@@ -73,11 +79,12 @@
           }
         }
         
-        # check that all params are used in main and all main params are iterated
+        # check that all params are used in main and all main params are itrted
         parUse <- names(formals(mainEnv$main))
         parChk <- parItr %in% parUse
         if (!all(parChk)) {
-          wrns <- c(wrns, sprintf("Unused parameter in main: %s", parItr[!parChk]))
+          wrns <- c(wrns, sprintf("Unused parameter in main: %s", 
+                                  parItr[!parChk]))
         }
         
         parChk <- parUse %in% parItr
@@ -108,7 +115,7 @@
   
   # Check for warnings and messages and return result
   if (length(wrns) > 0) {
-    cat("\nJob package check failed! Inspect the warning messages and adjust your code accordingly.")
+    cat(crayon::red("\nJob package check failed! Inspect the warning messages and adjust your code accordingly."))
     for (w in wrns) {
       warning(w, call. = FALSE)
     }
@@ -171,17 +178,16 @@
   # profile the job
   prof <- .profileJob(fulldir)
   
-  # create meta information
+  # create meta information -- see api docs
   meta <- list(
-    "nParams" = ncol(grid), 
-    "params" = colnames(grid),
-    "testParams" = gridEnv[["testParams"]],
-    "nIter" = nrow(grid),
-    "dataSize" = .folderSize(file.path(fulldir, "data")),
-    "memorySize" = prof[["outputSize"]],
-    "cpuTime" = prof[["timeRequired"]],
-    "RInfo" = as.list(unlist(version)),
-    "RPackages" = .findUsedPackages(file.path(fulldir, "main.R"))
+    "version" = "0.1.0",
+    "requirements" = list(
+      "memorySize" = prof[["outputSize"]],
+      "cpuTime" = ceiling(prof[["timeRequired"]]),
+      "packages" = .findUsedPackages(file.path(fulldir, "main.R")),
+      "RInfo" = as.list(unlist(version)),
+      "cores" = .findNCores(file.path(fulldir, "main.R")) # return 1 for now
+    )
   )
   
   jsonMeta <- jsonlite::toJSON(meta, pretty = TRUE)
@@ -248,7 +254,7 @@
 .profileJob <- function(dir) {
   # profile the job
   jobDir <- normalizePath(dir)
-  cat(paste0("\nRunning test iteration of '", basename(jobDir), "'."))
+  cat(crayon::silver(paste0("\nRunning test iteration of '", basename(jobDir), "'.")))
   t0 <- Sys.time()
   o <- .runJob(jobDir, "test")
   timePassed <- as.numeric(Sys.time() - t0, units = "secs")
@@ -411,4 +417,9 @@
                                   recursive = TRUE))[["size"]]) 
   }
   return(o)
+}
+
+# find the number of cores of a rocto dir
+.findNCores <- function(file) {
+  return(1) # return 1 for now
 }
