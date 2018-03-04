@@ -180,7 +180,7 @@
   
   # create meta information -- see api docs
   meta <- list(
-    "version" = "0.1.0",
+    "version" = "0.2.0",
     "requirements" = list(
       "memorySize" = prof[["outputSize"]],
       "cpuTime" = ceiling(prof[["timeRequired"]]),
